@@ -193,6 +193,7 @@ A series of constants that can be used with `Player.on()` / `Player.off()`. They
 | METADATA_ARRIVED    | Provides metadata which FLV file(stream) can contain with an "onMetaData" marker.  |
 | SCRIPTDATA_ARRIVED  | Provides scriptdata (OnCuePoint / OnTextData) which FLV file(stream) can contain. |
 | STATISTICS_INFO     | Provides playback statistics information like dropped frames, current speed, etc. |
+| SEI_DATA_ARRIVED    | Provides sei data arrived callback |
 
 ### flvjs.ErrorTypes
 

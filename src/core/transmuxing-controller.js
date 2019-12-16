@@ -267,6 +267,7 @@ class TransmuxingController {
             this._demuxer.onMediaInfo = this._onMediaInfo.bind(this);
             this._demuxer.onMetaDataArrived = this._onMetaDataArrived.bind(this);
             this._demuxer.onScriptDataArrived = this._onScriptDataArrived.bind(this);
+            this._demuxer.onSeiDataArrived = this._onSeiDataArrived.bind(this);
 
             this._remuxer.bindDataSource(this._demuxer
                          .bindDataSource(this._ioctl
@@ -434,6 +435,9 @@ class TransmuxingController {
         this._emitter.emit(TransmuxingEvents.STATISTICS_INFO, info);
     }
 
+    _onSeiDataArrived(seiData) {
+        this._emitter.emit(TransmuxingEvents.SEI_DATA_ARRIVED, seiData);
+    }
 }
 
 export default TransmuxingController;

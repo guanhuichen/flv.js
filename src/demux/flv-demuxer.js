@@ -16,6 +16,11 @@
  * limitations under the License.
  */
 
+/*
+ * chen, guanhui <guanhuichen@gmail.com>
+ * 2019/12/13 - read sei content from nalu for tracking
+ */
+
 import Log from '../utils/logger.js';
 import AMF from './amf-parser.js';
 import SPSParser from './sps-parser.js';
@@ -56,6 +61,7 @@ class FLVDemuxer {
         this._onScriptDataArrived = null;
         this._onTrackMetadata = null;
         this._onDataAvailable = null;
+        this._onSeiDataArrived = null;
 
         this._dataOffset = probeData.dataOffset;
         this._firstParse = true;
@@ -128,6 +134,7 @@ class FLVDemuxer {
         this._onScriptDataArrived = null;
         this._onTrackMetadata = null;
         this._onDataAvailable = null;
+        this._onSeiDataArrived = null;
     }
 
     static probe(buffer) {
@@ -185,6 +192,14 @@ class FLVDemuxer {
 
     set onMetaDataArrived(callback) {
         this._onMetaDataArrived = callback;
+    }
+
+    get onSeiDataArrived() {
+        return this._onSeiDataArrived;
+    }
+
+    set onSeiDataArrived(callback) {
+        this._onSeiDataArrived = callback;
     }
 
     get onScriptDataArrived() {
@@ -1068,6 +1083,38 @@ class FLVDemuxer {
 
             if (unitType === 5) {  // IDR
                 keyframe = true;
+            }
+
+            if (unitType === 6 && this._onSeiDataArrived) { // SEI for Sophon IoT
+                let seiOffset = offset + lengthSize + 1;
+                let nextByte = 0xff;
+                while (nextByte === 0xff) {
+                    nextByte = v.getUint8(seiOffset);
+                    seiOffset++;
+                }
+                // current nextByte should be equal to 5
+                // skip 8bits payload type byte - 5
+                let seiSize = 0;
+                nextByte = v.getUint8(seiOffset);
+                while (nextByte === 0xff) {
+                    seiSize += 255;
+                    seiOffset++;
+                    nextByte = v.getUint8(seiOffset);
+                }
+                seiSize += nextByte;
+                seiOffset += 16 + 1; // 最后一个8bits表示最后需要累加的内容长度以及16bytes的uuid
+                const seiContentSize = seiSize - 16 - 1; // skip uuid 128bits, 16bytes, 以及最后8bits无用数据
+                if (seiContentSize < 0) {
+                    Log.w(this.TAG, `invalid sei content size ${seiContentSize} bytes`);
+                } else {
+                    const seiRawData = new Uint8Array(arrayBuffer, dataOffset + seiOffset, seiContentSize);
+                    const seiContent = new TextDecoder('utf-8').decode(seiRawData);
+                    this._onSeiDataArrived({
+                        data: JSON.parse(seiContent),
+                        dts: dts,
+                        pts: dts + cts,
+                    });
+                }
             }
 
             let data = new Uint8Array(arrayBuffer, dataOffset + offset, lengthSize + naluSize);

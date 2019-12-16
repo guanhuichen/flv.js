@@ -58,6 +58,7 @@ let TransmuxingWorker = function (self) {
                 controller.on(TransmuxingEvents.SCRIPTDATA_ARRIVED, onScriptDataArrived.bind(this));
                 controller.on(TransmuxingEvents.STATISTICS_INFO, onStatisticsInfo.bind(this));
                 controller.on(TransmuxingEvents.RECOMMEND_SEEKPOINT, onRecommendSeekpoint.bind(this));
+                controller.on(TransmuxingEvents.SEI_DATA_ARRIVED, onSeiDataArrived.bind(this));
                 break;
             case 'destroy':
                 if (controller) {
@@ -151,6 +152,14 @@ let TransmuxingWorker = function (self) {
         let obj = {
             msg: TransmuxingEvents.SCRIPTDATA_ARRIVED,
             data: data
+        };
+        self.postMessage(obj);
+    }
+
+    function onSeiDataArrived(seiData) {
+        let obj = {
+            msg: TransmuxingEvents.SEI_DATA_ARRIVED,
+            data: seiData
         };
         self.postMessage(obj);
     }
