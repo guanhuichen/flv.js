@@ -1,6 +1,6 @@
 {
   "name": "@sophon/flvjs",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "HTML5 FLV Player",
   "main": "./dist/flv.js",
   "module": "./src/flv.js",

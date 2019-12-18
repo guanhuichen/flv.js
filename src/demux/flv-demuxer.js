@@ -1110,7 +1110,7 @@ class FLVDemuxer {
                     const seiRawData = new Uint8Array(arrayBuffer, dataOffset + seiOffset, seiContentSize);
                     const seiContent = new TextDecoder('utf-8').decode(seiRawData);
                     this._onSeiDataArrived({
-                        data: JSON.parse(seiContent),
+                        data: seiContent,
                         dts: dts,
                         pts: dts + cts,
                     });
